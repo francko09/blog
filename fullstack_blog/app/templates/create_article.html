@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Créer un nouvel article - Mon Blog{% endblock %}
+
+{% block content %}
+    <h1>Créer un nouvel article</h1>
+    <form id="create-article-form">
+        <div>
+            <label for="title">Titre :</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div>
+            <label for="content">Contenu :</label>
+            <textarea id="content" name="content" rows="10" required></textarea>
+        </div>
+        <div>
+            <label for="image">Image (optionnel) :</label>
+            <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/gif">
+        </div>
+        <button type="submit">Publier l'article</button>
+    </form>
+    <div id="message-area"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            handleCreateArticleForm();
+        });
+    </script>
+{% endblock %}
