@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - Mon Blog{% endblock %}
+
+{% block content %}
+<article class="article-detail">
+    <h1>{{ article.title }}</h1>
+    <p class="article-meta">
+        Par : <span class="author-name">{{ article.author.username }}</span> |
+        Publié le : <span class="publish-date">{{ article.created_at.strftime('%d %B %Y à %Hh%M') }}</span>
+    </p>
+
+    {% if article.image_filename %}
+    <div class="article-image-full">
+        <img src="{{ url_for('main.uploaded_file', filename=article.image_filename) }}" alt="{{ article.title }}">
+    </div>
+    {% endif %}
+
+    <div class="article-content-full">
+        {{ article.content | safe }} {# Utiliser |safe si le contenu peut contenir du HTML formaté par un éditeur riche. Sinon, échapper. #}
+        {# Pour du contenu en texte brut avec des sauts de ligne, on pourrait utiliser une balise <pre> ou du CSS white-space: pre-wrap #}
+        {# Si le contenu est du Markdown, il faudrait le convertir en HTML ici avec une extension comme Flask-Markdown #}
+    </div>
+
+    {% if current_user.is_authenticated and current_user.id == article.user_id %}
+    <div class="article-actions-detail">
+        <a href="{{ url_for('main.serve_edit_article_form', article_id=article.id) }}" class="btn btn-primary">Modifier l'article</a>
+        {# Le bouton de suppression appellera la même fonction JS que sur la page d'accueil #}
+        {# Il faut s'assurer que main.js est inclus et que la fonction handleDeleteArticle est globale ou accessible #}
+        {# Pour simplifier ici, on peut juste faire un lien vers une future route de confirmation de suppression ou un simple bouton #}
+        {# qui déclenche le JS. Le JS actuel ajoute les listeners aux boutons avec la classe .delete-button #}
+        <button class="delete-button btn btn-danger" data-article-id="{{ article.id }}" style="margin-left: 10px;">Supprimer l'article</button>
+    </div>
+    {% endif %}
+
+    <a href="{{ url_for('main.serve_index') }}" class="btn btn-secondary" style="margin-top: 20px;">Retour à la liste des articles</a>
+
+</article>
+
+{# S'assurer que main.js est chargé pour la fonctionnalité de suppression si besoin, ou dupliquer/adapter la logique JS ici #}
+{# Si main.js est déjà dans base.html dans le bloc scripts, c'est bon. #}
+{# Il faut aussi que currentUserId soit disponible pour handleDeleteArticle si elle l'utilise directement. #}
+{# Pour l'instant, on suppose que handleDeleteArticle de main.js est fonctionnel. #}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }} {# Inclut les scripts de base.html (si main.js y est, c'est bon) #}
+    {# Si currentUserId est nécessaire pour handleDeleteArticle et n'est pas global, il faut le passer ici aussi #}
+    {% if current_user.is_authenticated %}
+    <script>
+        // Rendre currentUserId disponible si ce n'est pas déjà fait globalement par base.html ou index.html
+        // Cependant, handleDeleteArticle ne l'utilise pas directement, il utilise data-article-id.
+        // La vérification de l'auteur se fait côté serveur pour la suppression.
+        // const currentUserId = {{ current_user.id | tojson }}; // Probablement pas nécessaire ici pour la suppression.
+
+        // Assurer que les écouteurs pour les boutons de suppression sont attachés
+        // si ce n'est pas déjà fait par un script global.
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.delete-button').forEach(button => {
+                button.addEventListener('click', handleDeleteArticle);
+            });
+        });
+    </script>
+    {% endif %}
+    <style>
+        .article-detail {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .article-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .article-meta .author-name {
+            font-weight: bold;
+        }
+        .article-image-full img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .article-content-full {
+            line-height: 1.7;
+            white-space: pre-wrap; /* Pour respecter les sauts de ligne du contenu texte */
+        }
+        .article-actions-detail {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9em;
+            text-align: center;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: 1px solid #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+    </style>
+{% endblock %}

@@ -20,7 +20,7 @@ async function loadArticles(currentUserId) {
         articles.forEach(article => {
             const articleElement = document.createElement('div');
             articleElement.classList.add('article');
-            articleElement.setAttribute('id', `article-${article.id}`); // Ajout d'un ID à l'élément article
+            articleElement.setAttribute('id', `article-${article.id}`);
 
             let imageHTML = '';
             if (article.image_url) {
@@ -28,9 +28,7 @@ async function loadArticles(currentUserId) {
             }
 
             let actionsHTML = '';
-            // Vérifier si l'utilisateur actuel est l'auteur de l'article
             if (currentUserId && article.user_id === currentUserId) {
-                // Ajout de marge (par exemple, avec des classes CSS ou des espaces non sécables)
                 actionsHTML = `
                     <a href="/article/${article.id}/edit" class="edit-link action-link" style="margin-left: 10px;">Modifier</a>
                     <button class="delete-button action-link" data-article-id="${article.id}" style="margin-left: 10px;">Supprimer</button>
@@ -43,14 +41,13 @@ async function loadArticles(currentUserId) {
                 <p>${escapeHTML(article.content.substring(0, 200))}...</p>
                 ${imageHTML}
                 <div class="article-actions">
-                    <a href="#" onclick="showArticleDetail(${article.id}); return false;" class="action-link">Lire la suite</a>
+                    <a href="/article/${article.id}" class="action-link">Lire la suite</a>
                     ${actionsHTML}
                 </div>
             `;
             articlesListDiv.appendChild(articleElement);
         });
 
-        // Ajouter les écouteurs d'événements pour les boutons de suppression après leur création
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', handleDeleteArticle);
         });
@@ -71,9 +68,6 @@ async function handleDeleteArticle(event) {
     try {
         const response = await fetch(`/api/articles/${articleId}`, {
             method: 'DELETE',
-            // Headers CSRF peuvent être nécessaires ici si Flask-WTF ou Flask-SeaSurf est utilisé pour la protection CSRF globale
-            // Exemple pour Flask-WTF avec meta tag:
-            // headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
         });
 
         if (response.ok) {
@@ -81,8 +75,6 @@ async function handleDeleteArticle(event) {
             if (articleElement) {
                 articleElement.remove();
             }
-            // Afficher un message de succès discret, ou ne rien faire pour une UX plus fluide.
-            // Un message global pourrait être affiché en haut de la page.
             console.log(`Article ${articleId} supprimé.`);
 
             const articlesListDiv = document.getElementById('articles-list');
@@ -161,10 +153,10 @@ function escapeHTML(str) {
         .replace(/'/g, '&#039;');
 }
 
-// Fonction pour afficher le détail d'un article (placeholder)
-function showArticleDetail(articleId) {
-    alert(`Affichage du détail pour l'article ID: ${articleId}. (Fonctionnalité de page de détail non implémentée)`);
-}
+// La fonction showArticleDetail n'est plus nécessaire car on redirige directement.
+// function showArticleDetail(articleId) {
+//     alert(`Affichage du détail pour l'article ID: ${articleId}. (Fonctionnalité de page de détail non implémentée)`);
+// }
 
 // Note: Les appels à loadArticles() et handleCreateArticleForm() sont faits
 // directement dans les templates HTML (index.html, create_article.html)

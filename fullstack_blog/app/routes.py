@@ -172,12 +172,10 @@ def delete_article_api(article_id):
     if article.author != current_user:
         return jsonify({'error': 'Action non autorisée'}), 403
 
-    # Supprimer l'image associée s'il y en a une
     if article.image_filename:
         try:
             os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], article.image_filename))
         except OSError as e:
-            # Logguer l'erreur mais continuer la suppression de l'article de la BDD
             current_app.logger.error(f"Erreur lors de la suppression du fichier image {article.image_filename}: {e}")
             pass
 
@@ -194,6 +192,11 @@ def uploaded_file(filename):
 @main_bp.route('/')
 def serve_index():
     return render_template('index.html')
+
+@main_bp.route('/article/<int:article_id>')
+def serve_article_detail(article_id):
+    article = Article.query.get_or_404(article_id)
+    return render_template('article_detail.html', article=article)
 
 @main_bp.route('/create-article')
 @login_required
