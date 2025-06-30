@@ -1,0 +1,44 @@
+Pour lancer et visualiser l'application que j'ai créée, voici les étapes à suivre :
+
+Téléchargez les fichiers : Assurez-vous d'avoir tous les fichiers du projet, en particulier le dossier fullstack_blog et son contenu.
+
+Ouvrez un terminal ou une invite de commande : Naviguez jusqu'au répertoire où vous avez téléchargé les fichiers. Vous devriez être au même niveau que le dossier fullstack_blog.
+
+Créez un environnement virtuel (recommandé) :
+
+Exécutez la commande : python -m venv venv
+(Si python ne fonctionne pas, essayez python3)
+Cela créera un dossier venv dans votre répertoire de projet.
+Activez l'environnement virtuel :
+
+Sous Windows : venv\Scripts\activate
+Sous macOS/Linux : source venv/bin/activate
+Votre invite de commande devrait changer pour indiquer que vous êtes dans l'environnement (venv).
+Installez les dépendances : Maintenant que l'environnement virtuel est actif, installez les packages Python nécessaires :
+
+Exécutez : pip install -r fullstack_blog/requirements.txt
+
+Avant de lancer l'application pour la première fois après avoir récupéré les dernières modifications (celles incluant l'authentification des utilisateurs), vous DEVEZ mettre à jour la base de données. Exécutez les commandes suivantes DEPUIS LE DOSSIER `fullstack_blog` et avec l'environnement virtuel activé :
+
+1.  `export FLASK_APP=run.py`  (ou `set FLASK_APP=run.py` sur Windows cmd, ou `$env:FLASK_APP="run.py"` sur PowerShell)
+2.  `flask db init` (Exécutez cette commande SEULEMENT SI vous n'avez jamais initialisé Flask-Migrate pour ce projet et que le dossier `migrations` est vide ou n'existe pas dans `fullstack_blog`.)
+3.  `flask db migrate -m "Initial migration with users and articles"` (Utilisez un message descriptif approprié si des migrations existent déjà)
+4.  `flask db upgrade`
+
+Lancez l'application Flask :
+
+Exécutez : python fullstack_blog/run.py
+(ou python3 fullstack_blog/run.py)
+Vous devriez voir des messages dans le terminal indiquant que le serveur de développement Flask est en cours d'exécution. Il mentionnera généralement une adresse comme http://127.0.0.1:5000/.
+
+Visualisez dans votre navigateur :
+
+Ouvrez votre navigateur web (Chrome, Firefox, Edge, etc.).
+Entrez l'adresse http://127.0.0.1:5000/ dans la barre d'adresse et appuyez sur Entrée.
+Vous devriez maintenant voir la page d'accueil du blog. Vous pourrez vous inscrire, vous connecter, créer des articles, et les gérer si vous en êtes l'auteur.
+
+En cas de problème :
+
+Vérifiez que Python est bien installé sur votre système et ajouté au PATH.
+Assurez-vous que toutes les commandes sont exécutées dans le bon répertoire et avec l'environnement virtuel activé.
+Regardez les messages d'erreur dans le terminal, ils donnent souvent des indices importants. Si vous avez des erreurs liées à la base de données après avoir ajouté les fonctionnalités d'authentification, assurez-vous que les commandes `flask db migrate` et `flask db upgrade` ont été exécutées correctement.
