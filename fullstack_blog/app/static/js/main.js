@@ -1,7 +1,8 @@
 // Fonction pour charger et afficher les articles
-async function loadArticles() {
+// Prend currentUserId en argument, qui peut être null si l'utilisateur n'est pas connecté.
+async function loadArticles(currentUserId) {
     const articlesListDiv = document.getElementById('articles-list');
-    if (!articlesListDiv) return; // S'assurer que l'élément existe
+    if (!articlesListDiv) return;
 
     try {
         const response = await fetch('/api/articles');
@@ -15,71 +16,134 @@ async function loadArticles() {
             return;
         }
 
-        articlesListDiv.innerHTML = ''; // Vider le message de chargement
+        articlesListDiv.innerHTML = '';
         articles.forEach(article => {
             const articleElement = document.createElement('div');
             articleElement.classList.add('article');
+            articleElement.setAttribute('id', `article-${article.id}`); // Ajout d'un ID à l'élément article
 
             let imageHTML = '';
             if (article.image_url) {
-                // Utiliser l'URL relative fournie par l'API
-                imageHTML = `<img src="${article.image_url}" alt="${article.title}">`;
+                imageHTML = `<img src="${article.image_url}" alt="${escapeHTML(article.title)}">`;
+            }
+
+            let actionsHTML = '';
+            // Vérifier si l'utilisateur actuel est l'auteur de l'article
+            if (currentUserId && article.user_id === currentUserId) {
+                // Ajout de marge (par exemple, avec des classes CSS ou des espaces non sécables)
+                actionsHTML = `
+                    <a href="/article/${article.id}/edit" class="edit-link action-link" style="margin-left: 10px;">Modifier</a>
+                    <button class="delete-button action-link" data-article-id="${article.id}" style="margin-left: 10px;">Supprimer</button>
+                `;
             }
 
             articleElement.innerHTML = `
                 <h2>${escapeHTML(article.title)}</h2>
+                <p><small>Par: ${escapeHTML(article.author_username)} | Publié le: ${new Date(article.created_at).toLocaleDateString()}</small></p>
                 <p>${escapeHTML(article.content.substring(0, 200))}...</p>
                 ${imageHTML}
-                <p><small>Publié le: ${new Date(article.created_at).toLocaleDateString()}</small></p>
-                <a href="#" onclick="showArticleDetail(${article.id}); return false;">Lire la suite</a>
+                <div class="article-actions">
+                    <a href="#" onclick="showArticleDetail(${article.id}); return false;" class="action-link">Lire la suite</a>
+                    ${actionsHTML}
+                </div>
             `;
-            // Note: showArticleDetail n'est pas encore implémenté, nécessiterait une nouvelle page ou un modal.
-            // Pour l'instant, "Lire la suite" ne fera rien de plus que ce qui est affiché.
-            // On pourrait aussi créer une page article.html et y lier directement.
             articlesListDiv.appendChild(articleElement);
         });
+
+        // Ajouter les écouteurs d'événements pour les boutons de suppression après leur création
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', handleDeleteArticle);
+        });
+
     } catch (error) {
         console.error('Erreur lors du chargement des articles:', error);
         articlesListDiv.innerHTML = '<p>Erreur lors du chargement des articles. Veuillez réessayer plus tard.</p>';
     }
 }
 
+// Fonction pour gérer la suppression d'un article
+async function handleDeleteArticle(event) {
+    const articleId = event.target.dataset.articleId;
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer cet article (ID: ${articleId}) ?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/articles/${articleId}`, {
+            method: 'DELETE',
+            // Headers CSRF peuvent être nécessaires ici si Flask-WTF ou Flask-SeaSurf est utilisé pour la protection CSRF globale
+            // Exemple pour Flask-WTF avec meta tag:
+            // headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+        });
+
+        if (response.ok) {
+            const articleElement = document.getElementById(`article-${articleId}`);
+            if (articleElement) {
+                articleElement.remove();
+            }
+            // Afficher un message de succès discret, ou ne rien faire pour une UX plus fluide.
+            // Un message global pourrait être affiché en haut de la page.
+            console.log(`Article ${articleId} supprimé.`);
+
+            const articlesListDiv = document.getElementById('articles-list');
+            if (articlesListDiv && articlesListDiv.children.length === 0) {
+                articlesListDiv.innerHTML = '<p>Aucun article à afficher pour le moment.</p>';
+            }
+        } else {
+            const result = await response.json().catch(() => ({ error: 'Réponse non JSON ou vide de l\'API' }));
+            alert(`Erreur lors de la suppression: ${result.error || response.statusText || 'Erreur inconnue de l\'API'}`);
+        }
+    } catch (error) {
+        console.error('Erreur réseau lors de la suppression:', error);
+        alert('Erreur réseau lors de la suppression de l\'article.');
+    }
+}
+
+
 // Fonction pour gérer la soumission du formulaire de création d'article
 function handleCreateArticleForm() {
     const form = document.getElementById('create-article-form');
-    if (!form) return; // S'assurer que le formulaire existe
+    if (!form) return;
 
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
 
         const formData = new FormData(form);
         const messageArea = document.getElementById('message-area');
-        messageArea.textContent = ''; // Vider les messages précédents
-        messageArea.className = ''; // Retirer les classes de style précédentes
+        if (messageArea) {
+            messageArea.textContent = '';
+            messageArea.className = '';
+        }
 
         try {
             const response = await fetch('/api/articles', {
                 method: 'POST',
-                body: formData // FormData gère automatiquement le Content-Type pour multipart/form-data
+                body: formData
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                messageArea.textContent = 'Article créé avec succès ! Redirection...';
-                messageArea.classList.add('success');
-                form.reset(); // Réinitialiser le formulaire
+                if (messageArea) {
+                    messageArea.textContent = 'Article créé avec succès ! Redirection...';
+                    messageArea.classList.add('success');
+                }
+                form.reset();
                 setTimeout(() => {
-                    window.location.href = '/'; // Rediriger vers la page d'accueil
+                    window.location.href = '/';
                 }, 2000);
             } else {
-                messageArea.textContent = `Erreur: ${result.error || response.statusText}`;
-                messageArea.classList.add('error');
+                if (messageArea) {
+                    messageArea.textContent = `Erreur: ${result.error || response.statusText || 'Erreur inconnue'}`;
+                    messageArea.classList.add('error');
+                }
             }
         } catch (error) {
             console.error('Erreur lors de la création de l\'article:', error);
-            messageArea.textContent = 'Une erreur s\'est produite lors de la soumission. Veuillez réessayer.';
-            messageArea.classList.add('error');
+            if (messageArea) {
+                messageArea.textContent = 'Une erreur réseau s\'est produite lors de la soumission. Veuillez réessayer.';
+                messageArea.classList.add('error');
+            }
         }
     });
 }
@@ -97,23 +161,11 @@ function escapeHTML(str) {
         .replace(/'/g, '&#039;');
 }
 
-
-// Appels initiaux (si les éléments sont sur la page courante)
-// Ces fonctions sont appelées via les scripts en ligne dans les HTML respectifs
-// après que le DOM soit chargé.
-// document.addEventListener('DOMContentLoaded', function() {
-//     loadArticles(); // Appelé depuis index.html
-//     handleCreateArticleForm(); // Appelé depuis create_article.html
-// });
-
 // Fonction pour afficher le détail d'un article (placeholder)
-// Pour une vraie implémentation, on pourrait:
-// 1. Naviguer vers une nouvelle page article_detail.html?id=<article.id>
-// 2. Afficher les détails dans un modal sur la page actuelle.
 function showArticleDetail(articleId) {
-    alert(`Affichage du détail pour l'article ID: ${articleId}. Fonctionnalité à implémenter.`);
-    // Exemple de redirection:
-    // window.location.href = `/article_detail?id=${articleId}`;
-    // Ou si on utilise une route Flask pour servir la page de détail:
-    // window.location.href = `/article/${articleId}`; // Assurez-vous que cette route existe
+    alert(`Affichage du détail pour l'article ID: ${articleId}. (Fonctionnalité de page de détail non implémentée)`);
 }
+
+// Note: Les appels à loadArticles() et handleCreateArticleForm() sont faits
+// directement dans les templates HTML (index.html, create_article.html)
+// après que le DOM soit chargé et que currentUserId soit disponible.

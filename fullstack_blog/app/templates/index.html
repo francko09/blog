@@ -11,10 +11,14 @@
 {% endblock %}
 
 {% block scripts %}
+    {# Passer l'ID de l'utilisateur actuel au script JS si connecté, sinon null #}
+    <script>
+        const currentUserId = {{ current_user.id | tojson if current_user.is_authenticated else 'null' }};
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            loadArticles();
+            loadArticles(currentUserId); // Passer l'ID au chargement
         });
     </script>
 {% endblock %}

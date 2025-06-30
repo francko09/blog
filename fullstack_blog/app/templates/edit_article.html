@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier l'article - {{ article.title }}{% endblock %}
+
+{% block content %}
+    <h1>Modifier l'article : {{ article.title }}</h1>
+
+    {# Affichage des messages flash (au cas où) #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div>
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form id="edit-article-form" method="POST" action="{{ url_for('main.edit_article_api', article_id=article.id) }}" enctype="multipart/form-data">
+        <div>
+            <label for="title">Titre :</label>
+            <input type="text" id="title" name="title" value="{{ article.title }}" required>
+        </div>
+        <div>
+            <label for="content">Contenu :</label>
+            <textarea id="content" name="content" rows="10" required>{{ article.content }}</textarea>
+        </div>
+        <div>
+            <label for="image">Image actuelle :</label>
+            {% if article.image_filename %}
+                <img src="{{ url_for('main.uploaded_file', filename=article.image_filename) }}" alt="Image actuelle" style="max-width: 200px; display: block; margin-bottom: 10px;">
+                <p>Laissez vide pour conserver l'image actuelle. Choisissez un nouveau fichier pour la remplacer.</p>
+            {% else %}
+                <p>Aucune image actuellement.</p>
+            {% endif %}
+            <label for="image_upload">Changer/Ajouter une image (optionnel) :</label>
+            <input type="file" id="image_upload" name="image" accept="image/png, image/jpeg, image/gif">
+        </div>
+        <button type="submit">Mettre à jour l'article</button>
+        <a href="{{ url_for('main.serve_index') }}" style="margin-left: 10px;">Annuler</a>
+    </form>
+    <div id="message-area-edit"></div>
+
+    <script>
+        // Script pour gérer la soumission du formulaire d'édition (similaire à create_article)
+        // On pourrait factoriser ce code dans main.js si on avait plus de formulaires AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('edit-article-form');
+            if (!form) return;
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const messageArea = document.getElementById('message-area-edit');
+                messageArea.textContent = '';
+                messageArea.className = '';
+
+                // L'URL d'action est déjà dans l'attribut action du formulaire
+                const url = form.action;
+
+                try {
+                    // Pour la mise à jour, on utilise généralement PUT, mais les formulaires HTML ne supportent que GET/POST.
+                    // On va utiliser POST et l'API Flask le traitera comme une mise à jour.
+                    const response = await fetch(url, {
+                        method: 'POST', // ou 'PUT' si l'API est conçue pour et qu'on n'utilise pas un form HTML direct pour l'envoi
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        messageArea.textContent = 'Article mis à jour avec succès ! Redirection...';
+                        messageArea.classList.add('success'); // Assurez-vous que .success est stylé
+                        setTimeout(() => {
+                            // Rediriger vers la page d'accueil ou la page de l'article
+                            window.location.href = "{{ url_for('main.serve_index') }}";
+                        }, 2000);
+                    } else {
+                        messageArea.textContent = `Erreur: ${result.error || response.statusText || 'Erreur inconnue'}`;
+                        messageArea.classList.add('error'); // Assurez-vous que .error est stylé
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la mise à jour de l\'article:', error);
+                    messageArea.textContent = 'Une erreur réseau s\'est produite. Veuillez réessayer.';
+                    messageArea.classList.add('error');
+                }
+            });
+        });
+    </script>
+    <style>
+        /* Ajout rapide de styles pour les messages si ce n'est pas déjà global */
+        #message-area-edit.success {
+            background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; padding: 10px; margin-top:10px;
+        }
+        #message-area-edit.error {
+            background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; padding: 10px; margin-top:10px;
+        }
+    </style>
+{% endblock %}

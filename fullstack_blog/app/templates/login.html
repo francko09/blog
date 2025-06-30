@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion - Mon Blog{% endblock %}
+
+{% block content %}
+    <h1>Connexion</h1>
+
+    {# Affichage des messages flash #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div>
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('main.login') }}">
+        <div>
+            <label for="username">Nom d'utilisateur ou Email :</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Mot de passe :</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div>
+            <input type="checkbox" id="remember" name="remember">
+            <label for="remember">Se souvenir de moi</label>
+        </div>
+        <button type="submit">Se connecter</button>
+    </form>
+    <p>Pas encore de compte ? <a href="{{ url_for('main.register') }}">Inscrivez-vous ici</a>.</p>
+
+    {# Les styles pour .alert sont déjà dans register.html,
+       idéalement ils devraient être dans style.css
+       Pour l'instant, on suppose qu'ils sont disponibles si register.html a été chargé
+       ou on les duplique/déplace. Pour éviter la redondance, on ne les remet pas ici.
+       Si on navigue directement sur login, ils manqueront.
+       Il est préférable de les avoir dans le style.css principal.
+    #}
+{% endblock %}
