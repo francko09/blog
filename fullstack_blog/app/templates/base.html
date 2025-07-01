@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Mon Blog{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    {# Styles pour les messages flash, déplacés ici depuis register.html pour être globaux #}
+    {# Styles pour les messages flash et bouton mode sombre (déplacés dans style.css plus tard idéalement) #}
     <style>
         .alert {
             padding: 10px;
@@ -14,7 +14,7 @@
             border-radius: 4px;
         }
         .alert-success {
-            color: #3c763d;
+            color: #3c763d; /* Sera surchargé par les variables CSS */
             background-color: #dff0d8;
             border-color: #d6e9c6;
         }
@@ -29,29 +29,29 @@
             border-color: #bce8f1;
         }
         nav .user-info {
-            margin-left: auto; /* Pousse les infos utilisateur à droite */
-            padding-right: 20px;
+            display: flex; /* Pour aligner le bouton mode sombre avec les liens user */
+            align-items: center;
         }
-        /* Style simple pour le bouton de mode sombre */
+        /* Style pour le bouton de mode sombre (icône) */
         #darkModeToggle {
+            background: none;
+            border: none;
+            color: var(--header-text-color); /* Utilise la variable CSS pour la couleur du texte du header */
+            font-size: 1.5rem; /* Taille de l'icône */
             cursor: pointer;
-            padding: 5px 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #f0f0f0;
-            margin-left: 15px; /* Un peu d'espace par rapport aux autres éléments du footer */
+            padding: 0.25rem 0.5rem;
+            margin-left: 15px; /* Espace par rapport aux liens utilisateur */
+            line-height: 1; /* Pour un meilleur alignement vertical de l'icône */
         }
-        body.dark-mode #darkModeToggle {
-            background-color: #444;
-            color: #fff;
-            border-color: #555;
+        #darkModeToggle:hover {
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
     <header>
-        <nav style="display: flex; align-items: center;">
-            <div>
+        <nav> {# style="display: flex; align-items: center;" est maintenant dans style.css #}
+            <div class="nav-links">
                 <a href="{{ url_for('main.serve_index') }}">Accueil</a>
                 {% if current_user.is_authenticated %}
                     <a href="{{ url_for('main.serve_create_article_form') }}">Nouvel Article</a>
@@ -65,14 +65,15 @@
                     <a href="{{ url_for('main.register') }}">Inscription</a>
                     <a href="{{ url_for('main.login') }}">Connexion</a>
                 {% endif %}
+                <button id="darkModeToggle" title="Changer de thème">🌙</button> {# Icône lune par défaut #}
             </div>
         </nav>
     </header>
     <main>
-        {# Affichage global des messages flash sous la nav, au cas où une redirection se ferait sans affichage spécifique sur la page cible #}
+        {# Affichage global des messages flash #}
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div style="max-width: 800px; margin: 10px auto 0 auto;">
+                <div class="flash-messages-container" style="max-width: 800px; margin: 10px auto 0 auto;">
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}
@@ -82,9 +83,9 @@
 
         {% block content %}{% endblock %}
     </main>
-    <footer style="display: flex; justify-content: space-between; align-items: center;">
+    <footer> {# style="display: flex; justify-content: space-between; align-items: center;" est maintenant dans style.css #}
         <p>&copy; 2024 Mon Blog Fullstack</p>
-        <button id="darkModeToggle">Mode Sombre/Clair</button>
+        {# Bouton mode sombre déplacé dans le header #}
     </footer>
     {% block scripts %}{% endblock %}
 </body>
