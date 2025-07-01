@@ -1,3 +1,31 @@
+// Fonction pour gérer le mode sombre
+function setupDarkModeToggle() {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    // Appliquer le mode sombre au chargement si la préférence est sauvegardée ou si le système préfère
+    if (localStorage.getItem('darkMode') === 'enabled' ||
+        (localStorage.getItem('darkMode') === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        body.classList.add('dark-mode');
+        if(darkModeToggle) darkModeToggle.textContent = 'Mode Clair';
+    } else {
+        if(darkModeToggle) darkModeToggle.textContent = 'Mode Sombre';
+    }
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+                darkModeToggle.textContent = 'Mode Clair';
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+                darkModeToggle.textContent = 'Mode Sombre';
+            }
+        });
+    }
+}
+
 // Fonction pour charger et afficher les articles
 // Prend currentUserId en argument, qui peut être null si l'utilisateur n'est pas connecté.
 async function loadArticles(currentUserId) {
@@ -158,6 +186,11 @@ function escapeHTML(str) {
 //     alert(`Affichage du détail pour l'article ID: ${articleId}. (Fonctionnalité de page de détail non implémentée)`);
 // }
 
-// Note: Les appels à loadArticles() et handleCreateArticleForm() sont faits
-// directement dans les templates HTML (index.html, create_article.html)
-// après que le DOM soit chargé et que currentUserId soit disponible.
+// Initialisation du mode sombre et autres fonctionnalités globales au chargement du DOM
+document.addEventListener('DOMContentLoaded', function() {
+    setupDarkModeToggle();
+
+    // Les appels spécifiques à des pages (comme loadArticles, handleCreateArticleForm)
+    // sont toujours initiés depuis les scripts en ligne dans ces pages HTML spécifiques
+    // pour s'assurer que les éléments nécessaires (currentUserId, formulaires) sont disponibles.
+});
