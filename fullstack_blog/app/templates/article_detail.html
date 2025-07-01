@@ -61,7 +61,7 @@
                     <strong>{{ comment.author.username }}</strong>
                     <span class="comment-date">le {{ comment.timestamp.strftime('%d %b %Y à %Hh%M') }}</span>
                 </p>
-                <p class="comment-content">{{ comment.content | nl2br }}</p>
+                <p class="comment-content">{{ comment.content }}</p> {# Filtre nl2br retiré #}
             </div>
             {% endfor %}
         {% else %}
