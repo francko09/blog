@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, send_from_directory, render_template, flash, redirect, url_for, abort
 from app import db, bcrypt # Importer db et bcrypt depuis le package app
-from app.models import Article, User # Importer User
+from app.models import Article, User, Comment # Importer Comment explicitement
 from flask_login import login_user, logout_user, current_user, login_required
 import os
 from werkzeug.utils import secure_filename
