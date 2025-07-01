@@ -2,26 +2,36 @@
 function setupDarkModeToggle() {
     const darkModeToggle = document.getElementById('darkModeToggle');
     const body = document.body;
+    const sunIcon = '☀️'; // Caractère Unicode pour le soleil
+    const moonIcon = '🌙'; // Caractère Unicode pour la lune
 
-    // Appliquer le mode sombre au chargement si la préférence est sauvegardée ou si le système préfère
+    // Fonction pour mettre à jour l'icône du bouton
+    function updateIcon() {
+        if (body.classList.contains('dark-mode')) {
+            darkModeToggle.innerHTML = sunIcon; // Affiche soleil si mode sombre actif
+            darkModeToggle.setAttribute('title', 'Passer en mode clair');
+        } else {
+            darkModeToggle.innerHTML = moonIcon; // Affiche lune si mode clair actif
+            darkModeToggle.setAttribute('title', 'Passer en mode sombre');
+        }
+    }
+
+    // Appliquer le mode sombre au chargement et définir l'icône initiale
     if (localStorage.getItem('darkMode') === 'enabled' ||
         (localStorage.getItem('darkMode') === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         body.classList.add('dark-mode');
-        if(darkModeToggle) darkModeToggle.textContent = 'Mode Clair';
-    } else {
-        if(darkModeToggle) darkModeToggle.textContent = 'Mode Sombre';
     }
+    if (darkModeToggle) updateIcon(); // Mettre à jour l'icône après avoir potentiellement ajouté la classe
 
     if (darkModeToggle) {
         darkModeToggle.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
             if (body.classList.contains('dark-mode')) {
                 localStorage.setItem('darkMode', 'enabled');
-                darkModeToggle.textContent = 'Mode Clair';
             } else {
                 localStorage.setItem('darkMode', 'disabled');
-                darkModeToggle.textContent = 'Mode Sombre';
             }
+            updateIcon(); // Mettre à jour l'icône après chaque clic
         });
     }
 }
@@ -52,7 +62,12 @@ async function loadArticles(currentUserId) {
 
             let imageHTML = '';
             if (article.image_url) {
-                imageHTML = `<img src="${article.image_url}" alt="${escapeHTML(article.title)}">`;
+                // Envelopper l'image dans le conteneur pour le ratio carré
+                imageHTML = `
+                    <div class="article-list-image-container">
+                        <img src="${article.image_url}" alt="${escapeHTML(article.title)}">
+                    </div>
+                `;
             }
 
             let actionsHTML = '';

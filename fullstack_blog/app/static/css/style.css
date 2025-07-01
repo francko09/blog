@@ -95,26 +95,85 @@ header nav {
 
 header nav .nav-links a { /* Groupe pour les liens principaux */
     color: var(--header-text-color);
-    margin-right: 15px; /* Marge à droite pour espacer les liens */
+    margin-right: 10px; /* Marge à droite réduite */
     text-decoration: none;
-    font-size: 1.1rem; /* Taille légèrement augmentée */
+    font-size: 1rem; /* Taille ajustée */
+    padding: 0.5rem 0.8rem; /* Padding pour l'aspect bouton */
+    border-radius: 4px; /* Coins arrondis */
+    border: 1px solid transparent; /* Bordure pour l'aspect bouton, transparente par défaut */
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 header nav .nav-links a:last-child {
     margin-right: 0;
 }
-header nav a:hover {
+
+/* Style des liens de navigation comme des boutons */
+header nav .nav-links a {
+    border-color: var(--header-text-color); /* Bordure visible mais subtile */
+}
+body.dark-mode header nav .nav-links a {
+    border-color: var(--header-text-color); /* Peut être la même ou une couleur différente pour le mode sombre */
+}
+
+header nav .nav-links a:hover,
+header nav .nav-links a:focus {
+    background-color: var(--header-text-color); /* Fond devient couleur du texte au survol */
+    color: var(--header-bg-color); /* Texte devient couleur du fond du header au survol */
+    text-decoration: none; /* Enlever le soulignement au survol pour les boutons */
+    border-color: var(--header-text-color); /* La bordure reste la même ou change si besoin */
+}
+
+/* S'assurer que les autres liens dans .user-info ne prennent pas le style bouton par défaut */
+header nav .user-info a {
+    color: var(--header-text-color);
+    margin-left: 10px;
+    padding: 0; /* Pas de padding de bouton */
+    border: none; /* Pas de bordure de bouton */
+    background-color: transparent; /* Pas de fond de bouton */
+}
+header nav .user-info a:hover { /* Garder le style de lien simple pour user-info */
     color: var(--link-hover-color);
     text-decoration: underline;
+    background-color: transparent;
 }
+
+
 header nav .user-info {
-    color: var(--header-text-color);
-    /* margin-left: auto; est géré par justify-content: space-between sur nav */
+    /* color: var(--header-text-color); // Redondant car hérité */
+    display: flex; /* Assure l'alignement correct avec le bouton mode sombre */
+    align-items: center;
 }
 header nav .user-info a {
-    margin-left: 10px; /* Espacer les liens Connexion/Inscription/Déconnexion */
+    color: var(--header-text-color); /* Assurer la couleur pour les liens ici aussi */
+    margin-left: 10px;
 }
 header nav .user-info span {
     margin-right: 10px;
+}
+
+/* Style pour le bouton de mode sombre (icône) */
+#darkModeToggle {
+    background: none;
+    border: none;
+    color: var(--header-text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem; /* Ajuster pour un meilleur 'hit area' */
+    margin-left: 15px;
+    line-height: 1;
+    border-radius: 4px; /* Optionnel: pour un léger effet au focus */
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+#darkModeToggle:hover {
+    opacity: 0.8;
+    /* background-color: rgba(255,255,255,0.1); // Léger fond au survol en mode sombre */
+}
+body.dark-mode #darkModeToggle:hover {
+     /* background-color: rgba(0,0,0,0.1); // Léger fond au survol en mode clair (si le bouton est sombre) */
+}
+#darkModeToggle:focus {
+    outline: none;
+    /* box-shadow: 0 0 0 2px var(--link-color); // Style de focus si souhaité */
 }
 
 
@@ -159,15 +218,42 @@ h1, h2, h3, h4, h5, h6 {
     text-decoration: underline;
 }
 
+/* Conteneur pour l'image de l'article dans la liste pour forcer un ratio carré */
+.article-list-image-container {
+    position: relative;
+    width: 100%; /* Prendra la largeur disponible dans la carte de l'article */
+    padding-bottom: 75%; /* Ratio 4:3. Pour un carré, utiliser 100%. Pour 16:9, utiliser 56.25% */
+    /* Si vous voulez un carré parfait, changez padding-bottom à 100% */
+    overflow: hidden;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem; /* Aligner avec la marge des paragraphes */
+    background-color: var(--border-color); /* Couleur de fond pendant le chargement ou si image absente */
+}
 
-#articles-list .article img, .article-image-full img {
+#articles-list .article .article-list-image-container img { /* Cibler spécifiquement les images dans ce conteneur */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Remplit le conteneur, rogne si nécessaire pour maintenir le ratio de l'image */
+    object-position: center; /* Centre l'image rognée */
+    /* border-radius: 0; /* Le radius est sur le conteneur */
+    /* display: block; est implicite avec position absolute et width/height 100% */
+}
+
+/* Styles pour les images sur la page de détail (pas carrées, pleine largeur) */
+.article-image-full img {
     max-width: 100%;
     height: auto;
-    margin-top: 0.5rem; /* Marge ajustée */
-    margin-bottom: 0.5rem; /* Ajout marge en bas */
-    border-radius: 6px; /* Coins arrondis un peu plus marqués */
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
     display: block;
 }
+
+
 #articles-list .article p {
     white-space: pre-wrap;
     margin-bottom: 0.75rem; /* Espacement des paragraphes */
