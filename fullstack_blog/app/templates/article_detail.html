@@ -207,8 +207,9 @@
                         const response = await fetch(`/api/article/${articleId}/like`, {
                             method: 'POST',
                             headers: {
-                                'Accept': 'application/json',
-                                // 'X-CSRFToken': '{{ csrf_token() }}' // Si CSRF est actif via Flask-WTF pour les POST AJAX
+                                'Accept': 'application/json'
+                                // Exemple d'en-tête CSRF si Flask-WTF est utilisé:
+                                // 'X-CSRFToken': 'VALEUR_DU_JETON_CSRF_ICI'
                             }
                         });
                         const result = await response.json();
