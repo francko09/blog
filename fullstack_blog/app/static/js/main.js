@@ -60,6 +60,13 @@ async function loadArticles(currentUserId) {
             articleElement.classList.add('article');
             articleElement.setAttribute('id', `article-${article.id}`);
 
+            // Vérifier si l'article a été lu
+            let readArticles = JSON.parse(localStorage.getItem('readArticles')) || [];
+            let isRead = readArticles.includes(article.id);
+            if (isRead) {
+                articleElement.classList.add('article-read'); // Ajoute une classe pour styler différemment
+            }
+
             let imageHTML = '';
             if (article.image_url) {
                 // Envelopper l'image dans le conteneur pour le ratio carré
@@ -78,8 +85,10 @@ async function loadArticles(currentUserId) {
                 `;
             }
 
+            let readStatusHTML = isRead ? '<span class="read-status">(Déjà lu)</span>' : '';
+
             articleElement.innerHTML = `
-                <h2>${escapeHTML(article.title)}</h2>
+                <h2>${escapeHTML(article.title)} ${readStatusHTML}</h2>
                 <p><small>Par: ${escapeHTML(article.author_username)} | Publié le: ${new Date(article.created_at).toLocaleDateString()}</small></p>
                 <p>${escapeHTML(article.content.substring(0, 200))}...</p>
                 ${imageHTML}

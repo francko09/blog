@@ -476,3 +476,26 @@ footer p {
         /* Styles spécifiques pour la grille */
     }
 }
+
+/* Styles pour la mention "Déjà Lu" */
+.article.article-read {
+    /* Exemple: rendre l'article un peu plus transparent ou changer sa bordure */
+    /* opacity: 0.7; */
+    /* border-left: 3px solid var(--link-color); */
+}
+
+.read-status {
+    font-size: 0.75rem;
+    color: var(--text-color);
+    opacity: 0.6;
+    margin-left: 8px;
+    font-weight: normal;
+}
+
+body.dark-mode .article.article-read {
+    /* opacity: 0.6; */
+}
+body.dark-mode .read-status {
+    color: var(--text-color);
+    opacity: 0.5;
+}

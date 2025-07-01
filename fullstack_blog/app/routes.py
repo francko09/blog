@@ -196,7 +196,70 @@ def serve_index():
 @main_bp.route('/article/<int:article_id>')
 def serve_article_detail(article_id):
     article = Article.query.get_or_404(article_id)
-    return render_template('article_detail.html', article=article)
+    comments = article.comments.order_by(Comment.timestamp.desc()).all()
+    current_user_has_liked = False
+    current_user_has_favorited = False
+    if current_user.is_authenticated:
+        current_user_has_liked = current_user.has_liked_article(article)
+        current_user_has_favorited = current_user.has_favorited_article(article)
+    return render_template(
+        'article_detail.html',
+        article=article,
+        comments=comments,
+        current_user_has_liked=current_user_has_liked,
+        current_user_has_favorited=current_user_has_favorited
+    )
+
+@main_bp.route('/api/article/<int:article_id>/comments', methods=['POST'])
+@login_required
+def add_comment_api(article_id):
+    article = Article.query.get_or_404(article_id)
+    content = request.form.get('content')
+
+    if not content or not content.strip():
+        return jsonify({'error': 'Le contenu du commentaire ne peut pas être vide.'}), 400
+
+    comment = Comment(content=content, author=current_user, article_ref=article)
+    db.session.add(comment)
+    db.session.commit()
+
+    # Renvoyer le commentaire formaté pour l'ajout dynamique
+    return jsonify({'message': 'Commentaire ajouté avec succès!', 'comment': comment.to_dict()}), 201
+
+@main_bp.route('/api/article/<int:article_id>/like', methods=['POST'])
+@login_required
+def toggle_like_article_api(article_id):
+    article = Article.query.get_or_404(article_id)
+    if current_user.has_liked_article(article):
+        current_user.unlike_article(article)
+        liked = False
+    else:
+        current_user.like_article(article)
+        liked = True
+    db.session.commit()
+    return jsonify({
+        'message': 'Like status updated!',
+        'liked': liked,
+        'likes_count': article.likers.count()
+    }), 200
+
+@main_bp.route('/api/article/<int:article_id>/favorite', methods=['POST'])
+@login_required
+def toggle_favorite_article_api(article_id):
+    article = Article.query.get_or_404(article_id)
+    if current_user.has_favorited_article(article):
+        current_user.remove_from_favorites(article)
+        favorited = False
+    else:
+        current_user.add_to_favorites(article)
+        favorited = True
+    db.session.commit()
+    return jsonify({
+        'message': 'Favorite status updated!',
+        'favorited': favorited,
+        'favorites_count': article.bookmarked_by.count() # Utilise le backref
+    }), 200
+
 
 @main_bp.route('/create-article')
 @login_required
